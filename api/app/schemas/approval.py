@@ -6,6 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.schemas.agent import RunDetailResponse
 from app.schemas.enums import ApprovalStatus, RiskLevel
 
 
@@ -30,3 +31,10 @@ class ApprovalResponse(BaseModel):
     decision_reason: str | None = None
     decided_at: datetime | None = None
     created_at: datetime
+
+
+class ApprovalDecisionResponse(BaseModel):
+    """Combined result returned after recording a HITL decision and any resumed execution."""
+
+    approval: ApprovalResponse
+    run: RunDetailResponse

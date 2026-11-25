@@ -19,6 +19,16 @@ class RunCreateRequest(BaseModel):
     simulate_action_failure: bool = False
 
 
+class N8nWebhookRequest(BaseModel):
+    """Inbound webhook payload from an n8n workflow trigger."""
+
+    message: str = Field(..., min_length=1, max_length=4000)
+    customer_ref: str | None = Field(default=None, max_length=128)
+    workflow_type: str = Field(default="customer_ops", min_length=1, max_length=64)
+    event_id: str | None = Field(default=None, min_length=1, max_length=128)
+    simulate_action_failure: bool = False
+
+
 class RedactionSummary(BaseModel):
     """Aggregate PII redaction report without storing raw sensitive values."""
 

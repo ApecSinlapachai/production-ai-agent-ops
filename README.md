@@ -1,6 +1,6 @@
 # Production AI Agent Ops
 
-> **Status:** Foundation Complete — PostgreSQL 16 / Supabase schema (`sql/001_schema.sql`), Docker Compose + multi-stage Dockerfile, FastAPI + Pydantic v2 + `psycopg_pool` + `langgraph` foundation, and verified checks (`ruff`: 0 errors, `pytest`: 9 passed, `docker compose config -q`: exit 0).
+> **Status:** Core Engine, HITL, Tiered Model Routing, DLQ Replay & n8n Webhooks Complete — PostgreSQL 16 / Supabase schema (`sql/001_schema.sql`), PDPA PII redaction layer, explicit `LangGraph` `StateGraph` engine with SQL-first persistence, HITL approval gates (`FOR UPDATE` row locking), `TieredModelRouter` (`FAST` vs `COMPLEX` + `429` fallback chain), Dead-Letter Queue replay (`/api/v1/dlq`), `/webhooks/n8n`, exportable `n8n/` workflows, and verified checks (`ruff`: 0 errors, `pytest`: 32 passed [25 unit + 7 live PG16 integration], `docker compose config -q`: exit 0).
 
 A production-minded **State-Machine AI Operations Agent** designed to demonstrate safe, cost-controlled, and auditable agentic automation for real-world business workflows.
 

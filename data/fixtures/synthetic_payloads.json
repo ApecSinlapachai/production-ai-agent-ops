@@ -1,0 +1,97 @@
+[
+  {
+    "case_id": "REQ-2026-0001",
+    "description": "Low-risk English order status inquiry without PII (FAST tier, auto-complete)",
+    "customer_ref": "CUST-DEMO-01",
+    "workflow_type": "customer_ops",
+    "source": "demo",
+    "message": "Hi support, can you check the shipping status of order ORD-2026-8841? Thanks!",
+    "expected_pii_entities": {},
+    "raw_pii_values": [],
+    "expected_requires_hitl": false,
+    "expected_routing_tier": "FAST",
+    "simulate_action_failure": false
+  },
+  {
+    "case_id": "REQ-2026-0002",
+    "description": "Thai/EN code-mixed tracking inquiry with Thai phone and email (PII redacted, FAST tier)",
+    "customer_ref": "CUST-DEMO-02",
+    "workflow_type": "customer_ops",
+    "source": "n8n",
+    "message": "สวัสดีครับ เช็คสถานะพัสดุ ORD-2026-9920 ให้หน่อยครับ ติดต่อกลับ 089-000-1122 หรือ somchai.demo@example.com",
+    "expected_pii_entities": {
+      "THAI_PHONE": 1,
+      "EMAIL": 1
+    },
+    "raw_pii_values": [
+      "089-000-1122",
+      "somchai.demo@example.com"
+    ],
+    "expected_requires_hitl": false,
+    "expected_routing_tier": "FAST",
+    "simulate_action_failure": false
+  },
+  {
+    "case_id": "REQ-2026-0003",
+    "description": "High-impact Thai refund request containing National ID, bank account, phone, and name (HITL gate)",
+    "customer_ref": "CUST-DEMO-03",
+    "workflow_type": "customer_ops",
+    "source": "api",
+    "message": "คุณสมชาย ทดสอบ ขอคืนเงิน 4,500 บาท สำหรับคำสั่งซื้อ ORD-2026-5501 เลขบัตรประชาชน 1-1099-00000-01-9 โอนเข้าบัญชี 123-4-56789-0 โทร 081-234-5678",
+    "expected_pii_entities": {
+      "PERSON_NAME": 1,
+      "THAI_NATIONAL_ID": 1,
+      "BANK_ACCOUNT": 1,
+      "THAI_PHONE": 1
+    },
+    "raw_pii_values": [
+      "สมชาย ทดสอบ",
+      "1-1099-00000-01-9",
+      "123-4-56789-0",
+      "081-234-5678"
+    ],
+    "expected_requires_hitl": true,
+    "expected_routing_tier": "COMPLEX",
+    "simulate_action_failure": false
+  },
+  {
+    "case_id": "REQ-2026-0004",
+    "description": "High-impact English credit & subscription cancellation request with full PII (HITL gate)",
+    "customer_ref": "CUST-DEMO-04",
+    "workflow_type": "customer_ops",
+    "source": "api",
+    "message": "Customer: Jane Demo wants to cancel subscription and request a billing credit of $199. Reach her at +66 89-555-0199 or jane.demo@example.org. Account no. 9876543210.",
+    "expected_pii_entities": {
+      "PERSON_NAME": 1,
+      "THAI_PHONE": 1,
+      "EMAIL": 1,
+      "BANK_ACCOUNT": 1
+    },
+    "raw_pii_values": [
+      "Jane Demo",
+      "+66 89-555-0199",
+      "jane.demo@example.org",
+      "9876543210"
+    ],
+    "expected_requires_hitl": true,
+    "expected_routing_tier": "COMPLEX",
+    "simulate_action_failure": false
+  },
+  {
+    "case_id": "REQ-2026-0005",
+    "description": "Simulated downstream failure to verify bounded retries and DLQ capture",
+    "customer_ref": "CUST-DEMO-05",
+    "workflow_type": "customer_ops",
+    "source": "demo",
+    "message": "Please check invoice status for INV-2026-3310 and notify ops@example.com.",
+    "expected_pii_entities": {
+      "EMAIL": 1
+    },
+    "raw_pii_values": [
+      "ops@example.com"
+    ],
+    "expected_requires_hitl": false,
+    "expected_routing_tier": "FAST",
+    "simulate_action_failure": true
+  }
+]

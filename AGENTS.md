@@ -49,7 +49,7 @@
 
 ## 2. Planned Repository Structure
 
-> **Current Status:** `Foundation Complete` — Core SQL schema, Docker config, FastAPI/Pydantic v2 foundation, and initial unit tests verified (`ruff`: 0 errors, `pytest`: 9 passed, `docker compose config -q`: exit 0).
+> **Current Status:** `Reliability, Tiered Model Router & n8n Integration Complete` — `TieredModelRouter` (`google-genai` 3.x `FAST`/`COMPLEX` + `429` fallback chain + deterministic offline fallback), bounded exponential backoff retries, Dead-Letter Queue inspection/replay (`/api/v1/dlq`), `X-Webhook-Secret`-protected `/webhooks/n8n`, and exportable `n8n/` workflow JSONs verified (`ruff`: 0 errors, `pytest`: 32 passed [25 unit + 7 live PG16 integration], `docker compose config -q`: exit 0).
 
 ### Locked Architectural Decisions
 - **LangGraph + SQL-First Transitions:** Use `LangGraph` `StateGraph` wrapping explicit step handlers, persisting every transition into `agent_runs` and `agent_state_transitions` (no opaque LangGraph checkpointer).
@@ -62,27 +62,28 @@
 production-ai-agent-ops/
 ├── .github/workflows/ci.yml            # [PLANNED] Ruff, Pytest, PG16 DDL, Eval/Cost Gate, Docker, Next.js build
 ├── docs/assets/demo-60s.gif            # [PLANNED] 1280x720 walkthrough GIF for README top section
-├── n8n/                                # [PLANNED] Exportable n8n workflow JSONs + setup notes
+├── n8n/                                # [DONE] Exportable n8n workflow JSONs (intake + HITL callback) + setup notes
 ├── sql/
 │   └── 001_schema.sql                  # [DONE] Agent runs, state transitions, HITL approvals, idempotency, DLQ, cost logs
-├── data/fixtures/                      # [PLANNED] Synthetic TH/EN webhook payloads & PDPA PII test cases
+├── data/fixtures/                      # [DONE] Synthetic TH/EN webhook payloads & PDPA PII test cases
 ├── api/
 │   ├── Dockerfile                      # [DONE] Multi-stage python:3.12-slim ($PORT-aware)
 │   ├── pyproject.toml                  # [DONE] Dependencies (langgraph, fastapi, psycopg3, google-genai), ruff, pytest
 │   └── app/
 │       ├── config.py                   # [DONE] Pydantic BaseSettings, Gemini 3.x routing & AUTH_MODE=token|demo_sandbox
 │       ├── db.py                       # [DONE] PostgreSQL connection pool (PgBouncer-safe) & health check
-│       ├── main.py                     # [DONE] FastAPI app, lifespan, CORS, GET /health
+│       ├── dependencies.py             # [DONE] AUTH_MODE Bearer/sandbox guard, X-Webhook-Secret guard, repository & engine dependencies
+│       ├── main.py                     # [DONE] FastAPI app, lifespan, CORS, GET /health, runs, approvals, dlq & webhooks routers
 │       ├── schemas/                    # [DONE] Pydantic v2 contracts & enums locked 1:1 with sql/001_schema.sql
-│       ├── services/                   # [PLANNED] pii_redactor, model_router, langgraph_engine, retry_dlq, rate_limiter
-│       └── routers/                    # [PLANNED] runs, approvals, dlq, webhooks, benchmark
+│       ├── services/                   # [IN PROGRESS] pii_redactor, repository, langgraph_engine, model_router [DONE]; rate_limiter [PLANNED]
+│       └── routers/                    # [IN PROGRESS] runs, approvals, dlq, webhooks [DONE]; benchmark [PLANNED]
 ├── eval/
 │   ├── benchmark_cases.json            # [PLANNED] 20-30 cases (TH/EN, PII redaction, HITL triggers, routing tiers, failures)
 │   ├── run_benchmark.py                # [PLANNED] Accuracy, PDPA leak check & 50-70% cost-routing benchmark runner
 │   └── thresholds.json                 # [PLANNED] CI pass/fail thresholds
 ├── tests/
-│   ├── unit/                           # [IN PROGRESS] Config, 1:1 SQL/Pydantic schema alignment & /health tests (9 passed)
-│   ├── integration/                    # [PLANNED] Live PostgreSQL 16 state persistence, HITL gate & DLQ replay tests
+│   ├── unit/                           # [DONE] Config, schemas, /health, PDPA redactor, model router, auth/dlq/webhooks unit tests (25 passed)
+│   ├── integration/                    # [DONE] Live PostgreSQL 16 state persistence, idempotency, HITL, DLQ replay & n8n webhook tests (7 passed)
 │   └── eval/                           # [PLANNED] Automated benchmark & guardrail gate tests
 ├── web/                                # [PLANNED] Next.js App Router + Tailwind CSS (No-Login Live Demo)
 ├── render.yaml                         # [PLANNED] Render Free Web Service Blueprint
@@ -98,8 +99,8 @@ production-ai-agent-ops/
 ## 3. Execution Roadmap (Target: 12–14 Days Including 2-Day Buffer)
 
 - **Day 1–2 (Done):** Architecture spec & Devil's Advocate review, `sql/001_schema.sql`, `docker-compose.yml`, `api/Dockerfile`, `pyproject.toml` (including `langgraph`), `config.py`, `db.py`, `main.py` (`/health`), Pydantic v2 schemas (`1:1` SQL alignment), initial unit tests (`9 passed`, `ruff` clean, `docker compose config -q` valid).
-- **Day 3–5 (Pending):** PDPA PII Redaction service (TH/EN synthetic patterns + zero-leak unit tests), Explicit State Machine / `LangGraph` workflow engine with PostgreSQL state-transition persistence, and Human-in-the-Loop Approval Gate (`AWAITING_APPROVAL` → `APPROVED` / `REJECTED`).
-- **Day 6–8 (Pending):** Reliability layer (`Idempotency-Key` deduplication, bounded Retry + Exponential Backoff, Dead-Letter Queue + replay endpoint), Tiered Model Router (`FAST` vs `COMPLEX` + `429` fallback chain), and `n8n/` exportable JSON workflows.
+- **Day 3–5 (Done):** PDPA PII Redaction service (`pii_redactor.py` + `data/fixtures/synthetic_payloads.json` + zero-leak unit tests), SQL-first `AgentRepository`, explicit `LangGraph` `StateGraph` engine (`langgraph_engine.py`) with PostgreSQL state-transition persistence, Human-in-the-Loop Approval Gate (`AWAITING_APPROVAL` → `APPROVED` / `REJECTED` with `FOR UPDATE` row locking), `/api/v1/runs` & `/api/v1/approvals` routers, and live Docker PostgreSQL 16 integration tests (`23 passed` total, `ruff` 0 errors).
+- **Day 6–8 (Done):** Tiered Model Router (`model_router.py` via `google-genai` 3.x `interactions.create(..., store=False)` with `FAST`/`COMPLEX` routing, `429` fallback chain, and deterministic offline fallback), bounded exponential backoff retries, Dead-Letter Queue inspection/replay (`GET /api/v1/dlq`, `POST /api/v1/dlq/{job_id}/replay` with `FOR UPDATE` locking), `X-Webhook-Secret`-protected `/webhooks/n8n`, exportable `n8n/` workflow JSONs + setup guide, and unit + live PG16 integration tests (`32 passed` total [25 unit + 7 live PG16 integration], `ruff` 0 errors).
 - **Day 9–10 (Pending):** `eval/benchmark_cases.json` (20–30 cases), `eval/run_benchmark.py` (Always-Frontier vs. Tiered Routing cost & accuracy benchmark), `eval/thresholds.json`, rate limiter, and `.github/workflows/ci.yml`.
 - **Day 11–12 (Pending):** `web/` Next.js No-Login Live Demo (trigger sample workflows, inspect live PII redaction diff, approve/reject HITL queue, inspect/replay DLQ, view Cost Routing Benchmark scorecard), `render.yaml`, Cloud deployment (Supabase + Render + Vercel), `60-Second Demo GIF`, and full English `README.md`.
 - **Day 13–14 (Pending — 2-Day Buffer):** Live browser E2E verification, mobile UX polish, edge-case hardening, GitHub profile pinning, and anonymized learnings export.

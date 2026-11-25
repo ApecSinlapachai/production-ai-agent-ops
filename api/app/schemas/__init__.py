@@ -8,7 +8,11 @@ from app.schemas.agent import (
     RunResponse,
     StateTransitionResponse,
 )
-from app.schemas.approval import ApprovalDecisionRequest, ApprovalResponse
+from app.schemas.approval import (
+    ApprovalDecisionRequest,
+    ApprovalDecisionResponse,
+    ApprovalResponse,
+)
 from app.schemas.benchmark import BenchmarkSummaryResponse, TierBenchmarkMetrics
 from app.schemas.dlq import DLQJobResponse, DLQReplayResponse
 from app.schemas.enums import (
@@ -26,6 +30,7 @@ __all__ = [
     "ALLOWED_TRANSITIONS",
     "AgentState",
     "ApprovalDecisionRequest",
+    "ApprovalDecisionResponse",
     "ApprovalResponse",
     "ApprovalStatus",
     "BenchmarkSummaryResponse",

@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import Settings, get_settings
 from app.db import DatabasePool
+from app.routers import approvals, dlq, runs, webhooks
 from app.schemas.agent import HealthResponse
 
 logger = logging.getLogger(__name__)
@@ -67,6 +68,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             fast_model=resolved_settings.gemini_fast_model,
             complex_model=resolved_settings.gemini_complex_model,
         )
+
+    app.include_router(runs.router)
+    app.include_router(approvals.router)
+    app.include_router(dlq.router)
+    app.include_router(webhooks.router)
 
     return app
 
