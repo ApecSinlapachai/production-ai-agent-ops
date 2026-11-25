@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-agent_ops}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/001_schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-agent_ops}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-agent_ops}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_FAST_MODEL: ${GEMINI_FAST_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_COMPLEX_MODEL: ${GEMINI_COMPLEX_MODEL:-gemini-3.8-flash}
+      GEMINI_FALLBACK_MODELS: ${GEMINI_FALLBACK_MODELS:-gemini-3.1-flash-lite}
+      AUTH_MODE: ${AUTH_MODE:-token}
+      ADMIN_API_TOKEN: ${ADMIN_API_TOKEN:-change-me-local-admin-token}
+      N8N_WEBHOOK_SECRET: ${N8N_WEBHOOK_SECRET:-change-me-n8n-webhook-secret}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-15}
+      RATE_LIMIT_PER_DAY: ${RATE_LIMIT_PER_DAY:-60}
+      MAX_RETRY_ATTEMPTS: ${MAX_RETRY_ATTEMPTS:-3}
+      RETRY_BASE_DELAY_SECONDS: ${RETRY_BASE_DELAY_SECONDS:-1.0}
+      HITL_CONFIDENCE_THRESHOLD: ${HITL_CONFIDENCE_THRESHOLD:-0.80}
+    ports:
+      - "8000:8000"
+
+volumes:
+  pgdata:
