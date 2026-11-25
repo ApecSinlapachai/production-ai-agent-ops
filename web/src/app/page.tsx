@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertOctagon,
   BarChart3,
@@ -9,7 +9,7 @@ import {
   Workflow,
 } from "lucide-react";
 import {
-  API_BASE_URL,
+  API_PROXY_PREFIX,
   fetchBenchmark,
   fetchHealth,
   listApprovals,
@@ -30,6 +30,9 @@ import { HealthBanner } from "@/components/HealthBanner";
 import { WorkflowSandbox } from "@/components/WorkflowSandbox";
 
 type TabId = "sandbox" | "approvals" | "dlq" | "benchmark";
+
+const HEALTH_RETRY_INTERVAL_MS = 5000;
+const HEALTH_MAX_RETRIES = 10;
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<TabId>("sandbox");
@@ -76,37 +79,64 @@ export default function HomePage() {
     }
   }, []);
 
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mountedRef = useRef(true);
+
+  const clearRetryTimer = useCallback(() => {
+    if (retryTimerRef.current !== null) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+  }, []);
+
   const checkHealth = useCallback(
-    async (retryOnFail = true) => {
+    async (attempt = 0) => {
+      clearRetryTimer();
       setHealthLoading(true);
-      setHealthError(null);
+      if (attempt === 0) {
+        setHealthError(null);
+      }
       try {
         const res = await fetchHealth();
+        if (!mountedRef.current) return;
         setHealth(res);
         setWakingUp(false);
+        setHealthError(null);
+        setHealthLoading(false);
         await Promise.all([loadOperationalData(), loadBenchmark()]);
       } catch {
+        if (!mountedRef.current) return;
         setHealth(null);
-        if (retryOnFail) {
+        if (attempt < HEALTH_MAX_RETRIES) {
+          const nextAttempt = attempt + 1;
           setWakingUp(true);
-          setHealthError(`Waiting for API at ${API_BASE_URL}...`);
-          setTimeout(() => {
-            void checkHealth(false);
-          }, 4000);
+          setHealthError(
+            `Waiting for API via ${API_PROXY_PREFIX} (retry ${nextAttempt}/${HEALTH_MAX_RETRIES})...`,
+          );
+          setHealthLoading(false);
+          retryTimerRef.current = setTimeout(() => {
+            void checkHealth(nextAttempt);
+          }, HEALTH_RETRY_INTERVAL_MS);
         } else {
           setWakingUp(false);
-          setHealthError(`Could not connect to API at ${API_BASE_URL}.`);
+          setHealthError(
+            `Could not connect to API via ${API_PROXY_PREFIX} after ${HEALTH_MAX_RETRIES} retries.`,
+          );
+          setHealthLoading(false);
         }
-      } finally {
-        setHealthLoading(false);
       }
     },
-    [loadBenchmark, loadOperationalData],
+    [clearRetryTimer, loadBenchmark, loadOperationalData],
   );
 
   useEffect(() => {
-    void checkHealth(true);
-  }, [checkHealth]);
+    mountedRef.current = true;
+    void checkHealth(0);
+    return () => {
+      mountedRef.current = false;
+      clearRetryTimer();
+    };
+  }, [checkHealth, clearRetryTimer]);
 
   const pendingApprovalsCount = approvals.filter((a) => a.status === "PENDING").length;
   const openDlqCount = dlqJobs.filter((j) => j.status === "OPEN").length;
@@ -159,7 +189,7 @@ export default function HomePage() {
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1 font-mono">
-            endpoint: {API_BASE_URL}
+            endpoint: {API_PROXY_PREFIX} (same-origin proxy)
           </span>
         </div>
       </header>
@@ -171,7 +201,7 @@ export default function HomePage() {
           loading={healthLoading}
           error={healthError}
           wakingUp={wakingUp}
-          onRetry={() => void checkHealth(false)}
+          onRetry={() => void checkHealth(0)}
         />
       </div>
 

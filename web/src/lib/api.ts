@@ -16,6 +16,8 @@ import type {
 
 const RAW_API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 export const API_BASE_URL = RAW_API_BASE.replace(/\/+$/, "");
+const RAW_PROXY_PREFIX = process.env.NEXT_PUBLIC_API_PROXY_PREFIX ?? "/backend";
+export const API_PROXY_PREFIX = RAW_PROXY_PREFIX.replace(/\/+$/, "");
 
 export class ApiError extends Error {
   status: number;
@@ -32,12 +34,14 @@ export class ApiError extends Error {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<{ data: T; headers: Headers }> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const headers = new Headers(init?.headers);
+  if (init?.body !== undefined && init?.body !== null && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
+  const response = await fetch(`${API_PROXY_PREFIX}${path}`, {
     ...init,
-    headers: {
-      "Content-Type": "application/json",
-      ...(init?.headers ?? {}),
-    },
+    headers,
     cache: "no-store",
   });
 
