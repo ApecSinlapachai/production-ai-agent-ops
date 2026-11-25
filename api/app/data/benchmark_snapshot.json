@@ -1,0 +1,36 @@
+{
+  "total_cases": 24,
+  "fast_cases": 16,
+  "complex_cases": 8,
+  "pii_entities_redacted": 32,
+  "pii_leak_rate": 0.0,
+  "hitl_enforcement_rate": 1.0,
+  "intent_accuracy": 1.0,
+  "routing_accuracy": 1.0,
+  "always_frontier": {
+    "model": "gemini-3.8-flash",
+    "total_input_tokens": 4238,
+    "total_output_tokens": 2195,
+    "total_cost_usd": 0.00781,
+    "cost_per_1000_runs_usd": 0.3254
+  },
+  "tiered_routing": {
+    "fast_model": "gemini-3.5-flash-lite",
+    "complex_model": "gemini-3.8-flash",
+    "total_input_tokens": 4238,
+    "total_output_tokens": 2195,
+    "total_cost_usd": 0.002907,
+    "cost_per_1000_runs_usd": 0.1211
+  },
+  "cost_reduction_pct": 62.78,
+  "thresholds": {
+    "max_pii_leak_rate": 0.0,
+    "min_hitl_enforcement_rate": 1.0,
+    "min_intent_accuracy": 0.9,
+    "min_routing_accuracy": 0.9,
+    "min_cost_reduction_pct": 50.0,
+    "max_cost_reduction_pct": 75.0
+  },
+  "gates_passed": true,
+  "gate_failures": []
+}

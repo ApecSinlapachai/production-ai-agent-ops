@@ -43,7 +43,8 @@ jobs:
           pip install -e "./api[dev]"
 
       - name: Run Ruff lint checks
-        run: ruff check api/app tests eval
+        working-directory: api
+        run: ruff check app ../tests ../eval
 
       - name: Run unit, live PostgreSQL 16 integration, and eval gate tests
         working-directory: api
@@ -58,3 +59,28 @@ jobs:
         run: |
           docker compose config -q
           docker build -t agent-ops-api:ci ./api
+
+  frontend-ci:
+    name: Next.js Typecheck & Production Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
+
+      - name: Install frontend dependencies
+        working-directory: web
+        run: npm ci
+
+      - name: Run TypeScript typecheck and Next.js build
+        working-directory: web
+        run: |
+          npx tsc --noEmit
+          npm run build
