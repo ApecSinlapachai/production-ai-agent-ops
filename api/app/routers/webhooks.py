@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
-from app.dependencies import get_agent_engine, require_webhook_secret
+from app.dependencies import enforce_rate_limit, get_agent_engine, require_webhook_secret
 from app.schemas.agent import N8nWebhookRequest, RunCreateRequest, RunDetailResponse
 from app.schemas.enums import RunSource
 from app.services.langgraph_engine import LangGraphAgentEngine
@@ -16,7 +16,7 @@ from app.services.repository import IdempotencyConflictError
 router = APIRouter(
     prefix="/webhooks",
     tags=["webhooks"],
-    dependencies=[Depends(require_webhook_secret)],
+    dependencies=[Depends(require_webhook_secret), Depends(enforce_rate_limit)],
 )
 
 EngineDep = Annotated[LangGraphAgentEngine, Depends(get_agent_engine)]

@@ -10,6 +10,7 @@ from fastapi import Header, HTTPException, Request, status
 from app.config import Settings
 from app.db import DatabasePool
 from app.services.langgraph_engine import LangGraphAgentEngine
+from app.services.rate_limiter import SlidingWindowRateLimiter, extract_client_ip, hash_client_ip
 from app.services.repository import AgentRepository
 
 
@@ -50,6 +51,22 @@ def require_webhook_secret(
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid X-Webhook-Secret.",
+        )
+
+
+def enforce_rate_limit(request: Request) -> None:
+    """Enforce IP-hashed sliding-window rate limits and return Retry-After on 429."""
+    limiter: SlidingWindowRateLimiter | None = getattr(request.app.state, "rate_limiter", None)
+    if limiter is None:
+        return
+
+    ip_hash = hash_client_ip(extract_client_ip(request))
+    allowed, retry_after = limiter.check_and_record(ip_hash)
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please retry later.",
+            headers={"Retry-After": str(retry_after)},
         )
 
 

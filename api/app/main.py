@@ -9,8 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import Settings, get_settings
 from app.db import DatabasePool
-from app.routers import approvals, dlq, runs, webhooks
+from app.routers import approvals, benchmark, dlq, runs, webhooks
 from app.schemas.agent import HealthResponse
+from app.services.rate_limiter import SlidingWindowRateLimiter
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = resolved_settings
+    app.state.rate_limiter = SlidingWindowRateLimiter(
+        per_minute=resolved_settings.rate_limit_per_min,
+        per_day=resolved_settings.rate_limit_per_day,
+    )
 
     app.add_middleware(
         CORSMiddleware,
@@ -73,6 +78,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(approvals.router)
     app.include_router(dlq.router)
     app.include_router(webhooks.router)
+    app.include_router(benchmark.router)
 
     return app
 

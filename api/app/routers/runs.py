@@ -7,7 +7,12 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response, status
 
-from app.dependencies import get_agent_engine, get_repository, require_api_auth
+from app.dependencies import (
+    enforce_rate_limit,
+    get_agent_engine,
+    get_repository,
+    require_api_auth,
+)
 from app.schemas.agent import RunCreateRequest, RunDetailResponse, RunResponse
 from app.schemas.enums import AgentState
 from app.services.langgraph_engine import LangGraphAgentEngine
@@ -16,7 +21,7 @@ from app.services.repository import AgentRepository, IdempotencyConflictError, N
 router = APIRouter(
     prefix="/api/v1/runs",
     tags=["runs"],
-    dependencies=[Depends(require_api_auth)],
+    dependencies=[Depends(require_api_auth), Depends(enforce_rate_limit)],
 )
 
 EngineDep = Annotated[LangGraphAgentEngine, Depends(get_agent_engine)]

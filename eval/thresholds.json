@@ -1,0 +1,8 @@
+{
+  "max_pii_leak_rate": 0.0,
+  "min_hitl_enforcement_rate": 1.0,
+  "min_intent_accuracy": 0.90,
+  "min_routing_accuracy": 0.90,
+  "min_cost_reduction_pct": 50.0,
+  "max_cost_reduction_pct": 75.0
+}

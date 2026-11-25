@@ -7,7 +7,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
-from app.dependencies import get_agent_engine, get_repository, require_api_auth
+from app.dependencies import (
+    enforce_rate_limit,
+    get_agent_engine,
+    get_repository,
+    require_api_auth,
+)
 from app.schemas.approval import (
     ApprovalDecisionRequest,
     ApprovalDecisionResponse,
@@ -24,7 +29,7 @@ from app.services.repository import (
 router = APIRouter(
     prefix="/api/v1/approvals",
     tags=["approvals"],
-    dependencies=[Depends(require_api_auth)],
+    dependencies=[Depends(require_api_auth), Depends(enforce_rate_limit)],
 )
 
 EngineDep = Annotated[LangGraphAgentEngine, Depends(get_agent_engine)]
