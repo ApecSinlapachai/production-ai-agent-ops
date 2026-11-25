@@ -2,6 +2,13 @@
 
 > **A production-minded State-Machine AI Operations Agent** featuring deterministic **LangGraph** state persistence, **PDPA PII Redaction**, **Human-in-the-Loop (HITL) Approval Gates**, **Idempotent Retry + Dead-Letter Queue (DLQ)**, **Tiered Model Routing (`62.78%` verified cost reduction)**, **`n8n` workflow integration**, and a **No-Login Next.js Live Control Plane**.
 
+[![CI](https://github.com/ApecSinlapachai/production-ai-agent-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/ApecSinlapachai/production-ai-agent-ops/actions/workflows/ci.yml)
+
+- **Live Control Plane (No-Login):** https://production-ai-agent-ops.vercel.app
+- **Live API Swagger Docs:** https://production-ai-agent-ops-api.onrender.com/docs *(Render Free Tier may take ~30–60s on cold start)*
+
+![Production AI Agent Ops — Live Control Plane Demo](./docs/assets/demo-60s.gif)
+
 ---
 
 ## Architecture & Deterministic State Machine
