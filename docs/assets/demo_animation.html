@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>production-ai-agent-ops — Construction Animation Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #050915;
+      --bg-mid: #0a1229;
+      --card-bg: rgba(13, 21, 44, 0.80);
+      --card-border: rgba(148, 163, 184, 0.20);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --amber: #f59e0b;
+      --cyan: #38bdf8;
+      --purple: #a855f7;
+      --pink: #ec4899;
+      --emerald: #10b981;
+      --rose: #fb7185;
+      --blue-btn: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #02050c;
+      color: var(--text-main);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Fixed 1920x1080 Stage scaled responsively to viewport */
+    #stage-wrap {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      transform-origin: center center;
+      overflow: hidden;
+      background:
+        radial-gradient(ellipse 920px 680px at 72% 54%, rgba(37, 99, 235, 0.22), transparent 70%),
+        radial-gradient(ellipse 700px 540px at 22% 28%, rgba(56, 189, 248, 0.11), transparent 65%),
+        radial-gradient(ellipse 640px 480px at 80% 82%, rgba(168, 85, 247, 0.13), transparent 68%),
+        linear-gradient(145deg, #060b19 0%, #0b1430 52%, #050916 100%);
+    }
+
+    /* Subtle dotted tech grid */
+    #stage-wrap::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 88% 85% at 52% 50%, #000 45%, transparent 100%);
+      pointer-events: none;
+    }
+
+    /* Subtle vignette border */
+    #stage-wrap::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      box-shadow: inset 0 0 120px rgba(2, 6, 23, 0.72);
+      pointer-events: none;
+    }
+
+    .scene {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 58px 72px 54px 72px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Header */
+    .top-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .brand-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: #e2e8f0;
+    }
+
+    .brand-logo {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-title {
+      font-size: 60px;
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
+
+    .hero-title .accent {
+      background: linear-gradient(90deg, #facc15 0%, #38bdf8 52%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .legend-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      padding: 13px 22px;
+      border-radius: 999px;
+      background: rgba(12, 20, 44, 0.84);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      backdrop-filter: blur(14px);
+      font-size: 18px;
+      font-weight: 600;
+      color: #e2e8f0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      margin-top: 8px;
+    }
+
+    .legend-pill .dot-cyan { color: #38bdf8; }
+    .legend-pill .dot-purple { color: #c084fc; }
+    .legend-pill .sep { color: #64748b; font-weight: 500; }
+    .legend-pill .tag-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.16);
+      border: 1px solid rgba(16, 185, 129, 0.42);
+      color: #34d399;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    /* Main Split Content */
+    .main-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 790px 1fr;
+      gap: 44px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    /* Left Column */
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+
+    /* Submitted Trigger Pill */
+    .prompt-pill {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      background: rgba(15, 24, 52, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.36);
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+
+    .cmd-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fbbf24;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .prompt-pill-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14.5px;
+      font-weight: 500;
+      color: #f1f5f9;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Live Pipeline Card */
+    .pipeline-card {
+      border-radius: 22px;
+      background: var(--card-bg);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      backdrop-filter: blur(18px);
+      padding: 22px 26px 20px 26px;
+      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.48), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      opacity: 0;
+      transform: translateY(22px) scale(0.98);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .grip {
+      color: #64748b;
+      font-size: 18px;
+      letter-spacing: -2px;
+    }
+
+    .status-pill {
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 14.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+      white-space: nowrap;
+    }
+
+    /* Mini Horizontal Graph inside Card */
+    .mini-graph {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      position: relative;
+      padding: 4px 0;
+    }
+
+    .mini-node {
+      position: relative;
+      border-radius: 14px;
+      background: rgba(9, 15, 34, 0.85);
+      border: 1.5px solid rgba(148, 163, 184, 0.2);
+      padding: 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .mini-node-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .mini-node-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .mini-node-sub {
+      font-size: 12.5px;
+      color: #94a3b8;
+      line-height: 1.3;
+    }
+
+    .mini-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--emerald);
+      color: #03150e;
+      font-size: 12px;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.5);
+    }
+
+    /* Telemetry Box */
+    .telemetry-box {
+      border-radius: 14px;
+      background: rgba(6, 10, 24, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      padding: 13px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.55;
+      color: #cbd5e1;
+      min-height: 78px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .telemetry-line-1 {
+      color: #7dd3fc;
+      font-weight: 600;
+    }
+
+    .telemetry-line-2 {
+      color: #cbd5e1;
+    }
+
+    /* Card Footer Progress */
+    .card-footer {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .footer-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14.5px;
+      color: #94a3b8;
+    }
+
+    .footer-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.16);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+    }
+
+    /* Bottom Slot: Composer -> Live Execution / Outcome Card */
+    .bottom-slot {
+      position: relative;
+      min-height: 204px;
+    }
+
+    .composer-box {
+      border-radius: 20px;
+      background: rgba(12, 20, 44, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      backdrop-filter: blur(18px);
+      padding: 22px 22px 20px 22px;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.44);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 204px;
+      gap: 18px;
+    }
+
+    .composer-input-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 54px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15.5px;
+      line-height: 1.5;
+      color: #f8fafc;
+    }
+
+    .composer-placeholder {
+      font-family: 'Inter', sans-serif;
+      color: #64748b;
+      font-size: 17px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2.5px;
+      height: 20px;
+      background: #38bdf8;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .composer-bottom-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .composer-left-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plus-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #94a3b8;
+      font-size: 21px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .model-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #e2e8f0;
+      font-size: 14.5px;
+      font-weight: 600;
+    }
+
+    .idem-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.32);
+      color: #7dd3fc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .cloud-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      color: #34d399;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: #ffffff;
+      font-size: 21px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(59, 130, 246, 0.55);
+    }
+
+    /* Dynamic Execution / Outcome Card */
+    .outcome-card {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(11, 20, 44, 0.94) 0%, rgba(9, 15, 34, 0.96) 100%);
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      backdrop-filter: blur(18px);
+      padding: 17px 22px 15px 22px;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(18px) scale(0.98);
+      pointer-events: none;
+    }
+
+    .outcome-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .outcome-title {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15.5px;
+      font-weight: 700;
+      color: #7dd3fc;
+      letter-spacing: 0.01em;
+    }
+
+    .outcome-badges {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .badge-secondary {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.42);
+      color: #7dd3fc;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-primary {
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.58);
+      color: #6ee7b7;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .outcome-view {
+      display: none;
+      flex-direction: column;
+      gap: 9px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .outcome-view.active {
+      display: flex;
+    }
+
+    /* View 1: PDPA Diff */
+    .diff-box {
+      border-radius: 12px;
+      background: rgba(6, 10, 24, 0.85);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 11px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: #e2e8f0;
+    }
+
+    .pii-del {
+      color: #fda4af;
+      background: rgba(244, 63, 94, 0.16);
+      padding: 1px 6px;
+      border-radius: 5px;
+      text-decoration: line-through;
+      margin-right: 4px;
+    }
+
+    .pii-mask {
+      color: #6ee7b7;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-weight: 700;
+    }
+
+    /* View 2: LangGraph State Machine + HITL Gate */
+    .fsm-strip {
+      display: flex;
+      align-items: center;
+      flex-wrap: nowrap;
+      gap: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .fsm-step {
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.72);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      color: #94a3b8;
+      white-space: nowrap;
+    }
+
+    .fsm-step.done {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+    }
+
+    .fsm-step.paused {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.65);
+      color: #fcd34d;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.22);
+    }
+
+    .fsm-arrow {
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .hitl-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: rgba(6, 10, 24, 0.82);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      font-size: 13.5px;
+      color: #e2e8f0;
+    }
+
+    .hitl-btn {
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* View 3: Reliability & n8n */
+    .rel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .rel-tile {
+      border-radius: 12px;
+      background: rgba(6, 10, 24, 0.86);
+      border: 1px solid rgba(236, 72, 153, 0.35);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .rel-tile-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #f9a8d4;
+    }
+
+    .rel-tile-val {
+      font-size: 12.5px;
+      color: #cbd5e1;
+      line-height: 1.35;
+    }
+
+    /* View 4: Benchmark Cost Routing */
+    .bench-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .bench-row {
+      display: grid;
+      grid-template-columns: 205px 1fr 112px;
+      align-items: center;
+      gap: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    .bench-label {
+      color: #cbd5e1;
+      font-weight: 600;
+    }
+
+    .bench-track {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.14);
+      overflow: hidden;
+    }
+
+    .bench-bar-base {
+      height: 100%;
+      width: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #64748b, #94a3b8);
+    }
+
+    .bench-bar-tiered {
+      height: 100%;
+      width: 37.2%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.55);
+    }
+
+    .bench-val {
+      text-align: right;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .outcome-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(148, 163, 184, 0.16);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .chip-cyan {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.34);
+      color: #bae6fd;
+    }
+
+    .chip-emerald {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.42);
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    /* Right Column: Isometric Orbital Graph */
+    .right-col {
+      position: relative;
+      width: 100%;
+      height: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #orbital-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    /* Floating Orbital Nodes */
+    .orb-node {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      border-radius: 18px;
+      background: rgba(11, 18, 40, 0.92);
+      backdrop-filter: blur(16px);
+      padding: 15px 18px;
+      min-width: 256px;
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      box-shadow: 0 18px 42px rgba(0, 0, 0, 0.52);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      opacity: 0;
+    }
+
+    .orb-node.lead {
+      min-width: 282px;
+      padding: 18px 20px;
+      border-color: rgba(245, 158, 11, 0.72);
+      box-shadow: 0 0 36px rgba(245, 158, 11, 0.22), 0 20px 44px rgba(0, 0, 0, 0.58);
+      z-index: 5;
+    }
+
+    .orb-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 22px;
+    }
+
+    .orb-text {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .orb-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 17.5px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .orb-sub {
+      font-size: 13px;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+
+    .orb-badge {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: var(--emerald);
+      color: #03150e;
+      font-size: 15px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.75);
+      opacity: 0;
+      transform: scale(0.4);
+    }
+
+    /* Footer Strip */
+    .bottom-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      color: #64748b;
+    }
+
+    .bottom-metrics {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .metric-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+    }
+
+    .metric-chip strong {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    /* Interactive Playback Bar (Hidden when ?export=1) */
+    #controls {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      backdrop-filter: blur(12px);
+      font-size: 13px;
+      color: #e2e8f0;
+    }
+
+    #controls button {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    #controls input[type="range"] {
+      width: 240px;
+      accent-color: #38bdf8;
+    }
+
+    body.export-mode #controls {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage-wrap">
+    <div class="scene">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div class="brand-block">
+          <div class="brand-eyebrow">
+            <span class="brand-logo">
+              <svg viewBox="0 0 28 28" width="28" height="28" fill="none">
+                <path d="M14 2L25 8.5V19.5L14 26L3 19.5V8.5L14 2Z" stroke="#38bdf8" stroke-width="2.2" fill="rgba(56,189,248,0.12)"/>
+                <circle cx="14" cy="14" r="5" fill="url(#logoGrad2)"/>
+                <defs>
+                  <linearGradient id="logoGrad2" x1="9" y1="9" x2="19" y2="19" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#facc15"/>
+                    <stop offset="1" stop-color="#38bdf8"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </span>
+            <span>production-ai-agent-ops</span>
+          </div>
+          <h1 class="hero-title">State-Machine <span class="accent">AI Agent Ops</span></h1>
+        </div>
+
+        <div class="legend-pill">
+          <span class="dot-cyan">✦</span>
+          <span>PDPA Redaction</span>
+          <span class="sep">⇌</span>
+          <span class="dot-purple">✦</span>
+          <span>LangGraph HITL + DLQ</span>
+          <span class="tag-badge">-62.78% Cost</span>
+        </div>
+      </div>
+
+      <!-- Main Split Grid -->
+      <div class="main-grid">
+        <!-- Left Column -->
+        <div class="left-col">
+          <!-- Submitted Trigger Pill -->
+          <div class="prompt-pill" id="prompt-pill">
+            <span class="cmd-chip">⚡ POST /runs</span>
+            <span class="prompt-pill-text" id="pill-text">Refund 4,500 THB · ORD-2026-5501 · ID 1-1099-00000-01-9 · 081-234-5678</span>
+          </div>
+
+          <!-- Pipeline Card -->
+          <div class="pipeline-card" id="pipeline-card">
+            <div class="card-header">
+              <div class="card-title">
+                <span class="grip">⋮⋮</span>
+                <span>SQL-First LangGraph Agent Pipeline</span>
+              </div>
+              <div class="status-pill" id="status-pill">RECEIVED</div>
+            </div>
+
+            <div class="mini-graph">
+              <div class="mini-node" id="mini-1">
+                <div class="mini-node-top">
+                  <span class="mini-node-name">@pii_guard</span>
+                  <span class="mini-check" id="mcheck-1">✓</span>
+                </div>
+                <div class="mini-node-sub">PDPA 0.00 Leak</div>
+              </div>
+              <div class="mini-node" id="mini-2">
+                <div class="mini-node-top">
+                  <span class="mini-node-name">@hitl_gate</span>
+                  <span class="mini-check" id="mcheck-2">✓</span>
+                </div>
+                <div class="mini-node-sub">FOR UPDATE Lock</div>
+              </div>
+              <div class="mini-node" id="mini-3">
+                <div class="mini-node-top">
+                  <span class="mini-node-name">@dlq_replay</span>
+                  <span class="mini-check" id="mcheck-3">✓</span>
+                </div>
+                <div class="mini-node-sub">Idem · 3x · n8n</div>
+              </div>
+              <div class="mini-node" id="mini-4">
+                <div class="mini-node-top">
+                  <span class="mini-node-name">@routing</span>
+                  <span class="mini-check" id="mcheck-4">✓</span>
+                </div>
+                <div class="mini-node-sub">-62.78% Cost</div>
+              </div>
+            </div>
+
+            <div class="telemetry-box">
+              <div class="telemetry-line-1" id="tel-line-1">Initializing LangGraph StateGraph + PG16 psycopg_pool...</div>
+              <div class="telemetry-line-2" id="tel-line-2">Ready for synthetic TH/EN ops webhooks (AUTH_MODE=demo_sandbox).</div>
+            </div>
+
+            <div class="card-footer">
+              <div class="footer-meta">
+                <span id="footer-status">Tiered Gemini 3.x · Waiting for inbound trigger...</span>
+                <span class="footer-count" id="footer-count">0/4</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="progress-fill"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Slot: Composer -> Live Execution / Outcome Card -->
+          <div class="bottom-slot">
+            <div class="composer-box" id="composer-box">
+              <div class="composer-input-row" id="composer-input">
+                <span class="cmd-chip" id="composer-cmd">⚡ POST /runs</span>
+                <span id="typed-text"></span><span class="cursor" id="cursor"></span>
+              </div>
+              <div class="composer-bottom-row">
+                <div class="composer-left-controls">
+                  <span class="plus-btn">+</span>
+                  <span class="model-pill">✦ Gemini 3.x Tiered <span style="color:#64748b">⌄</span></span>
+                  <span class="idem-pill">Idempotency-Key</span>
+                  <span class="cloud-pill">$0/mo Cloud</span>
+                </div>
+                <div class="send-btn" id="send-btn">↑</div>
+              </div>
+            </div>
+
+            <div class="outcome-card" id="outcome-card">
+              <div class="outcome-header">
+                <div class="outcome-title" id="outcome-title">🛡️ Pre-LLM PDPA PII Redaction</div>
+                <div class="outcome-badges">
+                  <span class="badge-secondary" id="outcome-badge-sec">3 ENTITIES</span>
+                  <span class="badge-primary" id="outcome-badge-pri">0.00 LEAK</span>
+                </div>
+              </div>
+
+              <!-- View 1: PDPA Redaction Diff -->
+              <div class="outcome-view" id="view-pdpa">
+                <div class="diff-box">
+                  Refund 4,500 THB · ORD-2026-5501 ·
+                  <span class="pii-del">1-1099-00000-01-9</span><span class="pii-mask">[THAI_NATIONAL_ID]</span> ·
+                  <span class="pii-del">081-234-5678</span><span class="pii-mask">[THAI_PHONE]</span> ·
+                  <span class="pii-del">jane.demo@example.org</span><span class="pii-mask">[EMAIL]</span>
+                </div>
+                <div class="outcome-footer">
+                  <span class="chip-cyan">🔒 Masked at API boundary before Gemini &amp; PG16</span>
+                  <span class="chip-emerald">redacted_input persisted ✓</span>
+                </div>
+              </div>
+
+              <!-- View 2: LangGraph State Machine + HITL Gate -->
+              <div class="outcome-view" id="view-hitl">
+                <div class="fsm-strip">
+                  <span class="fsm-step done">RECEIVED</span>
+                  <span class="fsm-arrow">→</span>
+                  <span class="fsm-step done">PII_REDACTED</span>
+                  <span class="fsm-arrow">→</span>
+                  <span class="fsm-step done">INTENT_ROUTED</span>
+                  <span class="fsm-arrow">→</span>
+                  <span class="fsm-step paused" id="fsm-hitl">AWAITING_APPROVAL</span>
+                  <span class="fsm-arrow">→</span>
+                  <span class="fsm-step" id="fsm-approved">APPROVED</span>
+                </div>
+                <div class="hitl-row">
+                  <span id="hitl-action-text">⏸ High-impact refund (4,500 THB) locked via PG16 <code>FOR UPDATE</code></span>
+                  <span class="hitl-btn" id="hitl-btn" style="background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.65); color: #fcd34d;">Awaiting Human...</span>
+                </div>
+                <div class="outcome-footer">
+                  <span>PostgreSQL: agent_runs + agent_state_transitions</span>
+                  <span class="chip-emerald" id="hitl-footer-chip">HITL Policy Gate: 1.00</span>
+                </div>
+              </div>
+
+              <!-- View 3: Reliability (Idempotency + 3x Retry -> DLQ Replay + n8n) -->
+              <div class="outcome-view" id="view-dlq">
+                <div class="rel-grid">
+                  <div class="rel-tile">
+                    <span class="rel-tile-label">🔑 Idempotency-Key</span>
+                    <span class="rel-tile-val">PG16 unique constraint · 0 duplicate runs</span>
+                  </div>
+                  <div class="rel-tile">
+                    <span class="rel-tile-label">🔄 3x Retry → DLQ</span>
+                    <span class="rel-tile-val">Exp. backoff → dead_letter_jobs replay ✓</span>
+                  </div>
+                  <div class="rel-tile">
+                    <span class="rel-tile-label">🔗 n8n Webhook</span>
+                    <span class="rel-tile-val">X-Webhook-Secret verified · 200 OK</span>
+                  </div>
+                </div>
+                <div class="outcome-footer">
+                  <span>POST /api/v1/dlq/{job_id}/replay (FOR UPDATE locked)</span>
+                  <span class="chip-emerald">Action Recovered ✓</span>
+                </div>
+              </div>
+
+              <!-- View 4: Tiered Gemini 3.x Benchmark & Final Summary -->
+              <div class="outcome-view" id="view-bench">
+                <div class="bench-wrap">
+                  <div class="bench-row">
+                    <span class="bench-label">Always-Frontier (3.8)</span>
+                    <div class="bench-track"><div class="bench-bar-base"></div></div>
+                    <span class="bench-val">$0.3254 / 1k</span>
+                  </div>
+                  <div class="bench-row">
+                    <span class="bench-label" style="color:#6ee7b7;">Tiered (3.5-lite + 3.8)</span>
+                    <div class="bench-track"><div class="bench-bar-tiered" id="bench-bar-tiered"></div></div>
+                    <span class="bench-val" style="color:#34d399;">$0.1211 / 1k</span>
+                  </div>
+                </div>
+                <div class="outcome-footer">
+                  <span class="chip-cyan">📊 24 TH/EN Cases · 100% Accuracy · 0.00 PII Leak</span>
+                  <span class="chip-emerald">🧪 40/40 pytest · -62.78% Cost</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Isometric Orbital Diagram -->
+        <div class="right-col" id="right-col">
+          <svg id="orbital-svg" viewBox="0 0 940 760">
+            <defs>
+              <radialGradient id="centerGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.22"/>
+                <stop offset="55%" stop-color="#2563eb" stop-opacity="0.08"/>
+                <stop offset="100%" stop-color="#050915" stop-opacity="0"/>
+              </radialGradient>
+              <linearGradient id="radarCone" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.28"/>
+                <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+              </linearGradient>
+              <filter id="glowSoft" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="5" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Soft ambient floor glow -->
+            <ellipse cx="470" cy="410" rx="430" ry="260" fill="url(#centerGlow)" />
+
+            <!-- Concentric Isometric Rings -->
+            <g id="rings-group" stroke="rgba(56, 189, 248, 0.24)" fill="none" stroke-width="1.5">
+              <ellipse id="ring-outer" cx="470" cy="410" rx="380" ry="205" stroke-dasharray="6 8" />
+              <ellipse id="ring-mid" cx="470" cy="410" rx="275" ry="148" />
+              <ellipse id="ring-inner" cx="470" cy="410" rx="165" ry="88" stroke-opacity="0.35" />
+            </g>
+
+            <!-- Rotating Radar Sweep Wedge -->
+            <g transform="translate(470, 410) scale(1, 0.54)">
+              <g id="radar-sweep">
+                <path d="M 0 0 L 375 0 A 375 375 0 0 1 265 265 Z" fill="url(#radarCone)" />
+              </g>
+            </g>
+
+            <!-- Connection Paths (Lead Center: 470, 385) -->
+            <g fill="none" stroke-linecap="round">
+              <path id="track-1" d="M 470 385 Q 310 315 210 195" stroke="rgba(56,189,248,0.18)" stroke-width="2.5" />
+              <path id="track-2" d="M 470 385 Q 630 315 735 195" stroke="rgba(168,85,247,0.18)" stroke-width="2.5" />
+              <path id="track-3" d="M 470 385 Q 315 475 215 595" stroke="rgba(236,72,153,0.18)" stroke-width="2.5" />
+              <path id="track-4" d="M 470 385 Q 625 475 730 595" stroke="rgba(16,185,129,0.18)" stroke-width="2.5" />
+
+              <path id="beam-1" d="M 470 385 Q 310 315 210 195" stroke="#38bdf8" stroke-width="3.5" filter="url(#glowSoft)" opacity="0" />
+              <path id="beam-2" d="M 470 385 Q 630 315 735 195" stroke="#c084fc" stroke-width="3.5" filter="url(#glowSoft)" opacity="0" />
+              <path id="beam-3" d="M 470 385 Q 315 475 215 595" stroke="#f472b6" stroke-width="3.5" filter="url(#glowSoft)" opacity="0" />
+              <path id="beam-4" d="M 470 385 Q 625 475 730 595" stroke="#34d399" stroke-width="3.5" filter="url(#glowSoft)" opacity="0" />
+            </g>
+
+            <!-- Traveling Pulse Orbs -->
+            <circle id="pulse-1" r="7" fill="#7dd3fc" filter="url(#glowSoft)" opacity="0" />
+            <circle id="pulse-2" r="7" fill="#e879f9" filter="url(#glowSoft)" opacity="0" />
+            <circle id="pulse-3" r="7" fill="#f9a8d4" filter="url(#glowSoft)" opacity="0" />
+            <circle id="pulse-4" r="7" fill="#6ee7b7" filter="url(#glowSoft)" opacity="0" />
+          </svg>
+
+          <!-- Center Lead Node -->
+          <div class="orb-node lead" id="node-lead" style="left: 50%; top: 50.6%;">
+            <div class="orb-icon" style="background: rgba(245,158,11,0.16); border: 1px solid rgba(245,158,11,0.45); color:#fbbf24;">⚙️</div>
+            <div class="orb-text">
+              <div class="orb-name">LangGraph Engine</div>
+              <div class="orb-sub">✦ PG16 SQL-First · HITL</div>
+            </div>
+            <div class="orb-badge" id="badge-lead">✓</div>
+          </div>
+
+          <!-- Worker 1: PDPA PII Guard (Top-Left) -->
+          <div class="orb-node" id="node-1" style="left: 22.3%; top: 25.6%; border-color: rgba(56,189,248,0.65);">
+            <div class="orb-icon" style="background: rgba(56,189,248,0.16); border: 1px solid rgba(56,189,248,0.45); color:#38bdf8;">🛡️</div>
+            <div class="orb-text">
+              <div class="orb-name">@pii_guard</div>
+              <div class="orb-sub">Pre-LLM PDPA · 0.00 Leak</div>
+            </div>
+            <div class="orb-badge" id="badge-1">✓</div>
+          </div>
+
+          <!-- Worker 2: HITL Approval Gate (Top-Right) -->
+          <div class="orb-node" id="node-2" style="left: 78.2%; top: 25.6%; border-color: rgba(168,85,247,0.65);">
+            <div class="orb-icon" style="background: rgba(168,85,247,0.16); border: 1px solid rgba(168,85,247,0.45); color:#c084fc;">✅</div>
+            <div class="orb-text">
+              <div class="orb-name">@hitl_gate</div>
+              <div class="orb-sub">FOR UPDATE · Approval</div>
+            </div>
+            <div class="orb-badge" id="badge-2">✓</div>
+          </div>
+
+          <!-- Worker 3: Reliability & DLQ Replay (Bottom-Left) -->
+          <div class="orb-node" id="node-3" style="left: 22.8%; top: 78.3%; border-color: rgba(236,72,153,0.65);">
+            <div class="orb-icon" style="background: rgba(236,72,153,0.16); border: 1px solid rgba(236,72,153,0.45); color:#f472b6;">🔁</div>
+            <div class="orb-text">
+              <div class="orb-name">@dlq_replay</div>
+              <div class="orb-sub">Idem · 3x Retry · n8n</div>
+            </div>
+            <div class="orb-badge" id="badge-3">✓</div>
+          </div>
+
+          <!-- Worker 4: Tiered Cost Router (Bottom-Right) -->
+          <div class="orb-node" id="node-4" style="left: 77.6%; top: 78.3%; border-color: rgba(16,185,129,0.65);">
+            <div class="orb-icon" style="background: rgba(16,185,129,0.16); border: 1px solid rgba(16,185,129,0.45); color:#34d399;">📊</div>
+            <div class="orb-text">
+              <div class="orb-name">@cost_router</div>
+              <div class="orb-sub">-62.78% · 40/40 pytest</div>
+            </div>
+            <div class="orb-badge" id="badge-4">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Strip -->
+      <div class="bottom-strip">
+        <div>github.com/ApecSinlapachai/production-ai-agent-ops</div>
+        <div class="bottom-metrics">
+          <span class="metric-chip">Stack: <strong>Next.js 15 · FastAPI · LangGraph · PG16</strong></span>
+          <span class="metric-chip">Tests: <strong>40/40 pytest</strong></span>
+          <span class="metric-chip">Cost Cut: <strong style="color:#34d399;">-62.78% ($0.1211/1k)</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Controls (Hidden during export) -->
+  <div id="controls">
+    <button id="btn-play">Pause</button>
+    <input id="scrubber" type="range" min="0" max="22" step="0.05" value="0" />
+    <span id="time-label" style="font-family: 'JetBrains Mono', monospace;">0.00s / 22.00s</span>
+  </div>
+
+  <script>
+    const DURATION = 22.0;
+    const PROMPT_STR = "Refund 4,500 THB · ORD-2026-5501 · ID 1-1099-00000-01-9 · 081-234-5678 · jane.demo@example.org";
+    const REDACTED_PILL = "Refund 4,500 THB · ORD-2026-5501 · [THAI_NATIONAL_ID] · [THAI_PHONE] · [EMAIL]";
+
+    const els = {
+      stage: document.getElementById('stage-wrap'),
+      promptPill: document.getElementById('prompt-pill'),
+      pillText: document.getElementById('pill-text'),
+      pipelineCard: document.getElementById('pipeline-card'),
+      statusPill: document.getElementById('status-pill'),
+      tel1: document.getElementById('tel-line-1'),
+      tel2: document.getElementById('tel-line-2'),
+      footerStatus: document.getElementById('footer-status'),
+      footerCount: document.getElementById('footer-count'),
+      progressFill: document.getElementById('progress-fill'),
+      composerBox: document.getElementById('composer-box'),
+      composerCmd: document.getElementById('composer-cmd'),
+      typedText: document.getElementById('typed-text'),
+      cursor: document.getElementById('cursor'),
+      sendBtn: document.getElementById('send-btn'),
+      outcomeCard: document.getElementById('outcome-card'),
+      outcomeTitle: document.getElementById('outcome-title'),
+      outcomeBadgeSec: document.getElementById('outcome-badge-sec'),
+      outcomeBadgePri: document.getElementById('outcome-badge-pri'),
+      viewPdpa: document.getElementById('view-pdpa'),
+      viewHitl: document.getElementById('view-hitl'),
+      viewDlq: document.getElementById('view-dlq'),
+      viewBench: document.getElementById('view-bench'),
+      fsmHitl: document.getElementById('fsm-hitl'),
+      fsmApproved: document.getElementById('fsm-approved'),
+      hitlActionText: document.getElementById('hitl-action-text'),
+      hitlBtn: document.getElementById('hitl-btn'),
+      benchBarTiered: document.getElementById('bench-bar-tiered'),
+      radarSweep: document.getElementById('radar-sweep'),
+      ringsGroup: document.getElementById('rings-group'),
+      nodeLead: document.getElementById('node-lead'),
+      badgeLead: document.getElementById('badge-lead'),
+      nodes: [1, 2, 3, 4].map(i => document.getElementById(`node-${i}`)),
+      badges: [1, 2, 3, 4].map(i => document.getElementById(`badge-${i}`)),
+      minis: [1, 2, 3, 4].map(i => document.getElementById(`mini-${i}`)),
+      mchecks: [1, 2, 3, 4].map(i => document.getElementById(`mcheck-${i}`)),
+      beams: [1, 2, 3, 4].map(i => document.getElementById(`beam-${i}`)),
+      pulses: [1, 2, 3, 4].map(i => document.getElementById(`pulse-${i}`)),
+      scrubber: document.getElementById('scrubber'),
+      timeLabel: document.getElementById('time-label'),
+      btnPlay: document.getElementById('btn-play'),
+    };
+
+    const clamp = (v, min = 0, max = 1) => Math.max(min, Math.min(max, v));
+    const easeOutCubic = t => 1 - Math.pow(1 - clamp(t), 3);
+    const easeOutBack = t => {
+      const c1 = 1.70158, c3 = c1 + 1;
+      const x = clamp(t);
+      return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+    };
+
+    function fitStage() {
+      const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      els.stage.style.transform = `scale(${scale})`;
+    }
+    window.addEventListener('resize', fitStage);
+    fitStage();
+
+    function setPulseOnPath(pathEl, circleEl, progress, visible) {
+      if (!visible) {
+        circleEl.setAttribute('opacity', '0');
+        return;
+      }
+      const len = pathEl.getTotalLength();
+      const pt = pathEl.getPointAtLength(clamp(progress) * len);
+      circleEl.setAttribute('cx', pt.x.toFixed(1));
+      circleEl.setAttribute('cy', pt.y.toFixed(1));
+      circleEl.setAttribute('opacity', '1');
+    }
+
+    function setStatusStyle(text, bg, border, color) {
+      els.statusPill.textContent = text;
+      els.statusPill.style.background = bg;
+      els.statusPill.style.borderColor = border;
+      els.statusPill.style.color = color;
+    }
+
+    function setOutcomeView(activeEl) {
+      [els.viewPdpa, els.viewHitl, els.viewDlq, els.viewBench].forEach((v) => {
+        v.classList.toggle('active', v === activeEl);
+      });
+    }
+
+    function renderAt(tRaw) {
+      const t = ((tRaw % DURATION) + DURATION) % DURATION;
+
+      // 1. Continuous radar sweep (360deg every 9s)
+      const angle = (t / 9.0) * 360;
+      els.radarSweep.setAttribute('transform', `rotate(${angle.toFixed(2)})`);
+
+      // 2. Typing phase (0.0s -> 2.65s) and submit pulse
+      if (t < 2.65) {
+        const chars = Math.floor(clamp((t - 0.12) / 2.2) * PROMPT_STR.length);
+        els.composerCmd.style.display = 'inline-flex';
+        els.typedText.textContent = PROMPT_STR.slice(0, chars);
+        els.typedText.className = '';
+        els.cursor.style.display = 'inline-block';
+        els.cursor.style.opacity = Math.floor(t * 2.5) % 2 === 0 ? '1' : '0.15';
+      } else {
+        els.composerCmd.style.display = 'none';
+        els.typedText.textContent = 'Trigger synthetic TH/EN webhook or inspect DLQ...';
+        els.typedText.className = 'composer-placeholder';
+        els.cursor.style.display = 'none';
+      }
+
+      const sendPulse = t >= 2.45 && t <= 2.85 ? 1 + 0.14 * Math.sin(((t - 2.45) / 0.4) * Math.PI) : 1;
+      els.sendBtn.style.transform = `scale(${sendPulse.toFixed(3)})`;
+
+      // 3. Prompt pill & Pipeline card reveal (2.6s -> 3.4s)
+      const pReveal = easeOutCubic((t - 2.6) / 0.55);
+      els.promptPill.style.opacity = pReveal.toFixed(3);
+      els.promptPill.style.transform = `translateY(${(1 - pReveal) * 22}px) scale(${0.97 + 0.03 * pReveal})`;
+
+      // Switch pill text to redacted version once PII redaction runs (t >= 4.4s)
+      if (t >= 4.4) {
+        els.pillText.textContent = REDACTED_PILL;
+        els.pillText.style.color = '#a7f3d0';
+      } else {
+        els.pillText.textContent = PROMPT_STR;
+        els.pillText.style.color = '#f1f5f9';
+      }
+
+      const cReveal = easeOutCubic((t - 2.85) / 0.6);
+      els.pipelineCard.style.opacity = cReveal.toFixed(3);
+      els.pipelineCard.style.transform = `translateY(${(1 - cReveal) * 20}px) scale(${0.98 + 0.02 * cReveal})`;
+
+      // 4. Orbital nodes entrance (staggered)
+      const leadIn = easeOutCubic((t - 0.35) / 0.65);
+      els.nodeLead.style.opacity = leadIn.toFixed(3);
+      els.nodeLead.style.transform = `translate(-50%, -50%) scale(${0.88 + 0.12 * leadIn})`;
+
+      const nodeStartTimes = [0.9, 1.2, 1.5, 1.8];
+      nodeStartTimes.forEach((st, idx) => {
+        const p = easeOutCubic((t - st) / 0.6);
+        els.nodes[idx].style.opacity = p.toFixed(3);
+        els.nodes[idx].style.transform = `translate(-50%, -50%) scale(${0.88 + 0.12 * p})`;
+      });
+
+      // 5. Four execution phases + Final Verified Green Hold
+      // Phase 1: 3.3s -> 6.5s (@pii_guard)
+      // Phase 2: 6.5s -> 10.6s (@hitl_gate — human approves at 8.8s)
+      // Phase 3: 10.6s -> 14.0s (@dlq_replay)
+      // Phase 4: 14.0s -> 16.4s (@cost_router)
+      // Verified Hold: 16.4s -> 22.0s (All Green)
+      const stages = [
+        { start: 3.3, done: 6.3, color: '#38bdf8', border: 'rgba(56,189,248,0.85)', glow: 'rgba(56,189,248,0.28)' },
+        { start: 6.5, done: 10.4, color: '#c084fc', border: 'rgba(168,85,247,0.85)', glow: 'rgba(168,85,247,0.28)' },
+        { start: 10.6, done: 13.8, color: '#f472b6', border: 'rgba(236,72,153,0.85)', glow: 'rgba(236,72,153,0.28)' },
+        { start: 14.0, done: 16.2, color: '#34d399', border: 'rgba(16,185,129,0.85)', glow: 'rgba(16,185,129,0.28)' },
+      ];
+
+      const allVerified = t >= 16.2;
+      let completedCount = 0;
+
+      stages.forEach((s, idx) => {
+        const isActive = t >= s.start && t < s.done;
+        const isDone = t >= s.done;
+        if (isDone) completedCount++;
+
+        const beamEl = els.beams[idx];
+        if (allVerified) {
+          beamEl.setAttribute('stroke', '#10b981');
+          beamEl.setAttribute('opacity', '0.88');
+        } else if (isActive) {
+          beamEl.setAttribute('stroke', s.color);
+          beamEl.setAttribute('opacity', '0.95');
+        } else if (isDone) {
+          beamEl.setAttribute('stroke', '#10b981');
+          beamEl.setAttribute('opacity', '0.45');
+        } else {
+          beamEl.setAttribute('opacity', '0');
+        }
+
+        if (isActive) {
+          const prog = ((t - s.start) / ((s.done - s.start) / 2)) % 1.0;
+          setPulseOnPath(beamEl, els.pulses[idx], prog, true);
+        } else {
+          setPulseOnPath(beamEl, els.pulses[idx], 0, false);
+        }
+
+        const orbEl = els.nodes[idx];
+        const miniEl = els.minis[idx];
+        if (allVerified) {
+          orbEl.style.borderColor = 'rgba(16,185,129,0.85)';
+          orbEl.style.boxShadow = '0 0 32px rgba(16,185,129,0.28), 0 18px 42px rgba(0,0,0,0.52)';
+          miniEl.style.borderColor = 'rgba(16,185,129,0.65)';
+          miniEl.style.boxShadow = '0 0 16px rgba(16,185,129,0.18)';
+        } else if (isActive) {
+          orbEl.style.borderColor = s.border;
+          orbEl.style.boxShadow = `0 0 38px ${s.glow}, 0 18px 42px rgba(0,0,0,0.55)`;
+          miniEl.style.borderColor = s.border;
+          miniEl.style.boxShadow = `0 0 18px ${s.glow}`;
+        } else if (isDone) {
+          orbEl.style.borderColor = 'rgba(16,185,129,0.65)';
+          orbEl.style.boxShadow = '0 18px 42px rgba(0,0,0,0.52)';
+          miniEl.style.borderColor = 'rgba(16,185,129,0.45)';
+          miniEl.style.boxShadow = 'none';
+        } else {
+          orbEl.style.borderColor = 'rgba(148,163,184,0.28)';
+          orbEl.style.boxShadow = '0 18px 42px rgba(0,0,0,0.52)';
+          miniEl.style.borderColor = 'rgba(148,163,184,0.2)';
+          miniEl.style.boxShadow = 'none';
+        }
+
+        const chkProg = easeOutBack((t - s.done) / 0.35);
+        const chkOp = isDone ? 1 : 0;
+        els.badges[idx].style.opacity = chkOp;
+        els.badges[idx].style.transform = `scale(${isDone ? chkProg : 0.4})`;
+        els.mchecks[idx].style.opacity = chkOp;
+        els.mchecks[idx].style.transform = `scale(${isDone ? chkProg : 0.4})`;
+      });
+
+      if (allVerified) {
+        const vProg = easeOutBack((t - 16.2) / 0.35);
+        els.badgeLead.style.opacity = '1';
+        els.badgeLead.style.transform = `scale(${vProg})`;
+        els.nodeLead.style.borderColor = 'rgba(16,185,129,0.88)';
+        els.nodeLead.style.boxShadow = '0 0 42px rgba(16,185,129,0.34), 0 20px 44px rgba(0,0,0,0.58)';
+        els.ringsGroup.setAttribute('stroke', 'rgba(16, 185, 129, 0.42)');
+      } else {
+        els.badgeLead.style.opacity = '0';
+        els.badgeLead.style.transform = 'scale(0.4)';
+        els.nodeLead.style.borderColor = 'rgba(245, 158, 11, 0.72)';
+        els.nodeLead.style.boxShadow = '0 0 36px rgba(245, 158, 11, 0.22), 0 20px 44px rgba(0,0,0,0.58)';
+        els.ringsGroup.setAttribute('stroke', 'rgba(56, 189, 248, 0.24)');
+      }
+
+      // 6. Pipeline Status Pill, Telemetry & Progress Bar
+      let pct = 0;
+      if (t < 3.3) {
+        pct = 0;
+        setStatusStyle('RECEIVED', 'rgba(245,158,11,0.16)', 'rgba(245,158,11,0.48)', '#fcd34d');
+        els.tel1.textContent = '→ POST /api/v1/runs · Idempotency-Key: idem-ord-5501';
+        els.tel1.style.color = '#fcd34d';
+        els.tel2.textContent = 'SHA-256 IP rate limiter OK · Initializing LangGraph StateGraph';
+        els.footerStatus.textContent = 'Idempotent intake · Entering pre-LLM PDPA boundary...';
+      } else if (t < 6.5) {
+        pct = 25 * clamp((t - 3.3) / 3.0);
+        setStatusStyle('PII_REDACTED', 'rgba(56,189,248,0.16)', 'rgba(56,189,248,0.5)', '#7dd3fc');
+        els.tel1.textContent = '🛡️ Masked 3 PII entities before LLM & DB: THAI_ID, PHONE, EMAIL';
+        els.tel1.style.color = '#7dd3fc';
+        els.tel2.textContent = 'PDPA leak rate = 0.00 · Persisted redacted_input only to PG16';
+        els.footerStatus.textContent = 'PDPA Guardrail · Zero raw PII leaves API boundary';
+      } else if (t < 10.6) {
+        pct = 25 + 25 * clamp((t - 6.5) / 3.9);
+        const isApproved = t >= 8.8;
+        if (!isApproved) {
+          setStatusStyle('AWAITING_APPROVAL', 'rgba(245,158,11,0.18)', 'rgba(245,158,11,0.6)', '#fcd34d');
+          els.tel1.textContent = '⏸ High-impact refund routed to COMPLEX (gemini-3.8-flash)';
+          els.tel1.style.color = '#fcd34d';
+          els.tel2.textContent = 'SELECT ... FOR UPDATE lock held · Paused at HITL Approval Gate';
+          els.footerStatus.textContent = 'HITL Gate active · Waiting for human reviewer decision...';
+        } else {
+          setStatusStyle('APPROVED ✓', 'rgba(168,85,247,0.18)', 'rgba(168,85,247,0.58)', '#d8b4fe');
+          els.tel1.textContent = '✅ Human Reviewer Approved · Lock released → EXECUTING_ACTION';
+          els.tel1.style.color = '#d8b4fe';
+          els.tel2.textContent = 'Transition logged in agent_state_transitions (actor=reviewer)';
+          els.footerStatus.textContent = 'HITL approved · Resuming deterministic state machine...';
+        }
+      } else if (t < 14.0) {
+        pct = 50 + 25 * clamp((t - 10.6) / 3.2);
+        setStatusStyle('DLQ_REPLAYED', 'rgba(236,72,153,0.16)', 'rgba(236,72,153,0.55)', '#f9a8d4');
+        els.tel1.textContent = '🔁 Transient 503 → 3x Exp. Backoff → dead_letter_jobs captured';
+        els.tel1.style.color = '#f9a8d4';
+        els.tel2.textContent = 'POST /api/v1/dlq/{job_id}/replay → n8n webhook dispatched (200 OK)';
+        els.footerStatus.textContent = 'Production reliability · Idempotent retry & DLQ recovery verified';
+      } else if (t < 16.2) {
+        pct = 75 + 25 * clamp((t - 14.0) / 2.2);
+        setStatusStyle('BENCHMARK_OK', 'rgba(16,185,129,0.16)', 'rgba(16,185,129,0.5)', '#6ee7b7');
+        els.tel1.textContent = '📊 Tiered Gemini 3.x: 16 FAST (3.5-lite) + 8 COMPLEX (3.8-flash)';
+        els.tel1.style.color = '#6ee7b7';
+        els.tel2.textContent = 'Cost: $0.1211 vs $0.3254/1k (-62.78%) · 100% accuracy · 40/40 pytest';
+        els.footerStatus.textContent = 'Eval Gate · Verifying tiered routing & CI thresholds...';
+      } else {
+        pct = 100;
+        setStatusStyle('COMPLETED ✓', 'rgba(16,185,129,0.22)', 'rgba(16,185,129,0.72)', '#34d399');
+        els.tel1.textContent = '✅ COMPLETED · 0.00 PII Leak · 1.00 HITL Gate · -62.78% LLM Cost';
+        els.tel1.style.color = '#34d399';
+        els.tel2.textContent = '40/40 pytest · Vercel + Render + Supabase PG16 ($0/mo live demo)';
+        els.footerStatus.textContent = 'Production verified · Deterministic State-Machine AI Agent live';
+      }
+
+      els.footerCount.textContent = `${completedCount}/4`;
+      els.progressFill.style.width = `${pct.toFixed(1)}%`;
+      els.progressFill.style.background = allVerified
+        ? 'linear-gradient(90deg, #10b981, #34d399)'
+        : 'linear-gradient(90deg, #38bdf8, #a855f7)';
+
+      // 7. Bottom Slot Swap: Composer -> Dynamic Outcome Card (t = 2.75s)
+      const slotSwap = easeOutCubic((t - 2.75) / 0.55);
+      els.composerBox.style.opacity = (1 - slotSwap).toFixed(3);
+      els.composerBox.style.transform = `translateY(${(-10 * slotSwap).toFixed(1)}px)`;
+
+      els.outcomeCard.style.opacity = slotSwap.toFixed(3);
+      els.outcomeCard.style.transform = `translateY(${((1 - slotSwap) * 16).toFixed(1)}px) scale(${(0.98 + 0.02 * slotSwap).toFixed(3)})`;
+
+      if (t < 6.5) {
+        // Phase 1: PDPA Diff View
+        setOutcomeView(els.viewPdpa);
+        els.outcomeCard.style.borderColor = 'rgba(56, 189, 248, 0.52)';
+        els.outcomeCard.style.boxShadow = '0 0 26px rgba(56,189,248,0.14), 0 18px 46px rgba(0,0,0,0.5)';
+        els.outcomeTitle.textContent = '🛡️ Pre-LLM PDPA PII Redaction Diff';
+        els.outcomeTitle.style.color = '#7dd3fc';
+        els.outcomeBadgeSec.textContent = '3 PII MASKED';
+        els.outcomeBadgePri.textContent = '0.00 LEAK';
+        els.outcomeBadgePri.style.background = 'rgba(16, 185, 129, 0.18)';
+        els.outcomeBadgePri.style.borderColor = 'rgba(16, 185, 129, 0.58)';
+        els.outcomeBadgePri.style.color = '#6ee7b7';
+      } else if (t < 10.6) {
+        // Phase 2: LangGraph State Machine + HITL Approval Gate
+        setOutcomeView(els.viewHitl);
+        const approved = t >= 8.8;
+        els.outcomeCard.style.borderColor = approved ? 'rgba(16, 185, 129, 0.65)' : 'rgba(168, 85, 247, 0.56)';
+        els.outcomeCard.style.boxShadow = approved
+          ? '0 0 28px rgba(16,185,129,0.18), 0 18px 46px rgba(0,0,0,0.5)'
+          : '0 0 26px rgba(168,85,247,0.16), 0 18px 46px rgba(0,0,0,0.5)';
+        els.outcomeTitle.textContent = '⚙️ LangGraph State Machine & HITL Gate';
+        els.outcomeTitle.style.color = approved ? '#6ee7b7' : '#d8b4fe';
+        els.outcomeBadgeSec.textContent = 'PG16 FOR UPDATE';
+        if (!approved) {
+          els.outcomeBadgePri.textContent = 'PAUSED (HITL)';
+          els.outcomeBadgePri.style.background = 'rgba(245, 158, 11, 0.18)';
+          els.outcomeBadgePri.style.borderColor = 'rgba(245, 158, 11, 0.6)';
+          els.outcomeBadgePri.style.color = '#fcd34d';
+          els.fsmHitl.className = 'fsm-step paused';
+          els.fsmApproved.className = 'fsm-step';
+          els.hitlActionText.innerHTML = '⏸ High-impact refund (4,500 THB) locked via PG16 <code>FOR UPDATE</code>';
+          els.hitlBtn.textContent = 'Awaiting Human...';
+          els.hitlBtn.style.background = 'rgba(245,158,11,0.2)';
+          els.hitlBtn.style.borderColor = 'rgba(245,158,11,0.65)';
+          els.hitlBtn.style.color = '#fcd34d';
+        } else {
+          els.outcomeBadgePri.textContent = 'APPROVED ✓';
+          els.outcomeBadgePri.style.background = 'rgba(16, 185, 129, 0.2)';
+          els.outcomeBadgePri.style.borderColor = 'rgba(16, 185, 129, 0.62)';
+          els.outcomeBadgePri.style.color = '#6ee7b7';
+          els.fsmHitl.className = 'fsm-step done';
+          els.fsmApproved.className = 'fsm-step done';
+          els.hitlActionText.innerHTML = '✅ Reviewer approved refund action — resuming <code>EXECUTING_ACTION</code>';
+          els.hitlBtn.textContent = '✓ Human Approved';
+          els.hitlBtn.style.background = 'rgba(16,185,129,0.22)';
+          els.hitlBtn.style.borderColor = 'rgba(16,185,129,0.7)';
+          els.hitlBtn.style.color = '#6ee7b7';
+        }
+      } else if (t < 14.0) {
+        // Phase 3: Reliability & n8n
+        setOutcomeView(els.viewDlq);
+        els.outcomeCard.style.borderColor = 'rgba(236, 72, 153, 0.55)';
+        els.outcomeCard.style.boxShadow = '0 0 26px rgba(236,72,153,0.16), 0 18px 46px rgba(0,0,0,0.5)';
+        els.outcomeTitle.textContent = '🔁 Production Reliability & n8n Integration';
+        els.outcomeTitle.style.color = '#f9a8d4';
+        els.outcomeBadgeSec.textContent = '0 DUPES';
+        els.outcomeBadgePri.textContent = 'DLQ REPLAY ✓';
+        els.outcomeBadgePri.style.background = 'rgba(236, 72, 153, 0.18)';
+        els.outcomeBadgePri.style.borderColor = 'rgba(236, 72, 153, 0.58)';
+        els.outcomeBadgePri.style.color = '#fbcfe8';
+      } else {
+        // Phase 4 & Verified Hold: Tiered Cost Routing Benchmark
+        setOutcomeView(els.viewBench);
+        els.outcomeCard.style.background = 'linear-gradient(155deg, rgba(10, 26, 42, 0.95) 0%, rgba(11, 20, 44, 0.94) 100%)';
+        els.outcomeCard.style.borderColor = 'rgba(16, 185, 129, 0.72)';
+        els.outcomeCard.style.boxShadow = '0 0 38px rgba(16, 185, 129, 0.22), 0 18px 46px rgba(0, 0, 0, 0.5)';
+        els.outcomeTitle.textContent = '✦ Tiered Gemini 3.x Model Routing Benchmark';
+        els.outcomeTitle.style.color = '#34d399';
+        els.outcomeBadgeSec.textContent = '-62.78% COST';
+        els.outcomeBadgePri.textContent = 'COMPLETED ✓';
+        els.outcomeBadgePri.style.background = 'rgba(16, 185, 129, 0.2)';
+        els.outcomeBadgePri.style.borderColor = 'rgba(16, 185, 129, 0.62)';
+        els.outcomeBadgePri.style.color = '#6ee7b7';
+
+        const barAnim = easeOutCubic((t - 14.1) / 1.1);
+        els.benchBarTiered.style.width = `${(37.2 * barAnim).toFixed(1)}%`;
+      }
+
+      // Seamless loop edge fade
+      if (t > DURATION - 0.4) {
+        const fade = clamp((DURATION - t) / 0.4);
+        els.stage.style.opacity = (0.35 + 0.65 * fade).toFixed(3);
+      } else if (t < 0.3) {
+        const fadeIn = clamp(t / 0.3);
+        els.stage.style.opacity = (0.35 + 0.65 * fadeIn).toFixed(3);
+      } else {
+        els.stage.style.opacity = '1';
+      }
+    }
+
+    // Expose deterministic seek hook for headless renderer
+    window.seekTo = function (sec) {
+      playing = false;
+      currentTime = sec;
+      renderAt(sec);
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const isExport = params.get('export') === '1';
+    const fixedT = params.has('t') ? parseFloat(params.get('t')) : null;
+
+    if (isExport) {
+      document.body.classList.add('export-mode');
+    }
+
+    let playing = !isExport && fixedT === null;
+    let currentTime = fixedT !== null ? fixedT : 0;
+    let lastTs = performance.now();
+
+    function loop(now) {
+      const dt = (now - lastTs) / 1000;
+      lastTs = now;
+      if (playing) {
+        currentTime = (currentTime + dt) % DURATION;
+        renderAt(currentTime);
+        els.scrubber.value = currentTime.toFixed(2);
+        els.timeLabel.textContent = `${currentTime.toFixed(2)}s / ${DURATION.toFixed(2)}s`;
+      }
+      requestAnimationFrame(loop);
+    }
+
+    els.btnPlay.addEventListener('click', () => {
+      playing = !playing;
+      els.btnPlay.textContent = playing ? 'Pause' : 'Play';
+      lastTs = performance.now();
+    });
+
+    els.scrubber.addEventListener('input', (e) => {
+      playing = false;
+      els.btnPlay.textContent = 'Play';
+      currentTime = parseFloat(e.target.value);
+      renderAt(currentTime);
+      els.timeLabel.textContent = `${currentTime.toFixed(2)}s / ${DURATION.toFixed(2)}s`;
+    });
+
+    renderAt(currentTime);
+    if (!isExport) {
+      requestAnimationFrame(loop);
+    }
+  </script>
+</body>
+</html>
