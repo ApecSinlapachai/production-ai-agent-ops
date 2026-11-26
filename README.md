@@ -124,6 +124,14 @@ npx tsc --noEmit && npm run build
 
 ---
 
-## Project Governance
+## Engineering Standards & Architecture Docs (SSOT)
 
-See [`AGENTS.md`](./AGENTS.md) for engineering rules, architectural decisions, repository layout, and verification gates.
+This repository follows a **6-Layer AI-Native SSOT** engineering layout:
+
+- **Product & Technical Spec:** [`docs/SPEC.md`](./docs/SPEC.md)
+- **Architecture Decision Records (ADRs):**
+  - [`0001-langgraph-sql-first-state-machine.md`](./docs/adr/0001-langgraph-sql-first-state-machine.md)
+  - [`0002-pdpa-pii-redaction-and-hitl-approval-gates.md`](./docs/adr/0002-pdpa-pii-redaction-and-hitl-approval-gates.md)
+  - [`0003-tiered-model-routing-dlq-and-same-origin-proxy.md`](./docs/adr/0003-tiered-model-routing-dlq-and-same-origin-proxy.md)
+- **Live Progress & Handoff Ledger:** [`docs/PROGRESS.md`](./docs/PROGRESS.md)
+- **AI Agent Entrypoint & Guardrails:** [`AGENTS.md`](./AGENTS.md) *(and [`CLAUDE.md`](./CLAUDE.md))*
