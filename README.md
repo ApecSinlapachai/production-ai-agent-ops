@@ -4,7 +4,8 @@
 
 [![CI](https://github.com/ApecSinlapachai/production-ai-agent-ops/actions/workflows/ci.yml/badge.svg)](https://github.com/ApecSinlapachai/production-ai-agent-ops/actions/workflows/ci.yml)
 
-- **Live Control Plane (No-Login):** https://production-ai-agent-ops.vercel.app
+- **Live Control Plane (No-Login):** https://apec-ai-portfolio.vercel.app/demos/agent-ops
+- **Ask AI about this project:** [Chat with Portfolio Copilot](https://apec-ai-portfolio.vercel.app/chat?scope=production-ai-agent-ops)
 - **Live API Swagger Docs:** https://production-ai-agent-ops-api.onrender.com/docs *(Render Free Tier may take ~30–60s on cold start)*
 
 ![Production AI Agent Ops — Live Control Plane Demo](./docs/assets/demo-60s.gif)
