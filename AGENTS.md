@@ -49,7 +49,7 @@
 
 ## 2. Planned Repository Structure
 
-> **Current Status:** `Live Cloud Rollout, E2E Verification & Demo GIF Complete` — Deployed to free-tier cloud (**Supabase** PostgreSQL + RLS on `enterprise-rag-ops-copilot`, **Render Free Web Service** at `https://production-ai-agent-ops-api.onrender.com` with `AUTH_MODE=demo_sandbox`, and **Vercel Hobby** at `https://production-ai-agent-ops.vercel.app`). Live GitHub Actions CI (`backend-ci` + `frontend-ci`) passed green, all 6 live E2E flows verified (`ONLINE • PG16 CONNECTED`, PDPA PII redaction, `X-Idempotency-Replayed: true`, HITL Approve & Resume, 3x retry → DLQ capture & replay, and `62.78%` Cost Benchmark scorecard), `docs/assets/demo-60s.gif` (`1280x720`) generated, and `README.md` updated with live links and GIF. Local verification: `ruff`: 0 errors across `app`, `tests`, `eval`; `pytest`: 40 passed [31 unit + 7 live PG16 integration + 2 eval gates]; `npx tsc --noEmit && npm run build`: exit 0; `docker compose config -q`: exit 0.
+> **Current Status:** `Live Cloud Rollout, E2E Verification, Same-Origin Proxy & Construction Animation Demo Complete` — Deployed to free-tier cloud (**Supabase** PostgreSQL + RLS, **Render Free Web Service** at `https://production-ai-agent-ops-api.onrender.com` with `AUTH_MODE=demo_sandbox`, and **Vercel Hobby** at `https://production-ai-agent-ops.vercel.app`). Live GitHub Actions CI (`backend-ci` + `frontend-ci`) passed green, all 6 live E2E flows verified (`ONLINE • PG16 CONNECTED`, PDPA PII redaction, `X-Idempotency-Replayed: true`, HITL Approve & Resume, 3x retry → DLQ capture & replay, and `62.78%` Cost Benchmark scorecard). Commit `8e662fb` migrated frontend requests to a same-origin Next.js `/backend` proxy with 10×5s cold-start polling (live-verified on Vercel: `ONLINE • PG16 CONNECTED`, `0` direct `*.onrender.com` requests), and commit `3967675` added the zero-dep Chrome CDP + FFmpeg Construction Animation Demo (`docs/assets/demo_animation.html`, `scripts/render_motion_demo.mjs`, and `docs/assets/demo-60s.gif` at `1280x720`, `7.30 MB`). Local verification: `ruff`: 0 errors across `app`, `tests`, `eval`; `pytest`: 40 passed [31 unit + 7 live PG16 integration + 2 eval gates]; `npx tsc --noEmit && npm run build`: exit 0; `docker compose config -q`: exit 0.
 
 ### Locked Architectural Decisions
 - **LangGraph + SQL-First Transitions:** Use `LangGraph` `StateGraph` wrapping explicit step handlers, persisting every transition into `agent_runs` and `agent_state_transitions` (no opaque LangGraph checkpointer).
@@ -57,11 +57,16 @@
 - **Public Demo Auth Mode:** `AUTH_MODE=token|demo_sandbox` (`token` default; `demo_sandbox` for public Vercel demo without exposing secrets to the browser; `/webhooks/n8n` always requires `X-Webhook-Secret`).
 - **Zero Raw PII Persistence:** Redact PII at the API boundary before DB insert or logging; persist only `redacted_input` and `redaction_summary`.
 - **Supabase PgBouncer & Concurrency Safety:** `psycopg_pool` with `prepare_threshold=None`, idempotency via `INSERT ... ON CONFLICT (idempotency_key)` + payload hash check, and `FOR UPDATE` row locking on HITL approvals.
+- **Same-Origin Next.js Proxy & Cold-Start Polling:** Proxy browser API calls through `/backend/:path*` (`web/next.config.ts` `rewrites()` → `API_PROXY_TARGET || NEXT_PUBLIC_API_BASE_URL`), send `Content-Type: application/json` only when a request has a body (`web/src/lib/api.ts`), and auto-retry `/backend/health` up to 10× every 5s (~50s) with `useEffect` timer cleanup (`web/src/app/page.tsx`) to avoid AdBlock/Brave/corporate firewall blocks and Render cold-start errors.
 
 ```text
 production-ai-agent-ops/
 ├── .github/workflows/ci.yml            # [DONE] Ruff, Pytest (PG16 + Eval Gates), Benchmark CLI, Docker build, Next.js CI
-├── docs/assets/demo-60s.gif            # [DONE] 1280x720 walkthrough GIF for README top section
+├── docs/assets/
+│   ├── demo_animation.html             # [DONE] 1920x1080 deterministic Construction Animation motion demo
+│   └── demo-60s.gif                    # [DONE] 1280x720 (7.30 MB) motion demo GIF for README & GitHub Profile
+├── scripts/
+│   └── render_motion_demo.mjs          # [DONE] Zero-dep Chrome CDP + FFmpeg MP4/GIF exporter (<= 8 MB cap)
 ├── n8n/                                # [DONE] Exportable n8n workflow JSONs (intake + HITL callback) + setup notes
 ├── sql/
 │   └── 001_schema.sql                  # [DONE] Agent runs, state transitions, HITL approvals, idempotency, DLQ, cost logs
@@ -104,7 +109,7 @@ production-ai-agent-ops/
 - **Day 6–8 (Done):** Tiered Model Router (`model_router.py` via `google-genai` 3.x `interactions.create(..., store=False)` with `FAST`/`COMPLEX` routing, `429` fallback chain, and deterministic offline fallback), bounded exponential backoff retries, Dead-Letter Queue inspection/replay (`GET /api/v1/dlq`, `POST /api/v1/dlq/{job_id}/replay` with `FOR UPDATE` locking), `X-Webhook-Secret`-protected `/webhooks/n8n`, exportable `n8n/` workflow JSONs + setup guide, and unit + live PG16 integration tests (`32 passed` total [25 unit + 7 live PG16 integration], `ruff` 0 errors).
 - **Day 9–10 (Done):** IP-hashed (`SHA-256`) sliding-window rate limiter (`rate_limiter.py`, `429` + `Retry-After`), `eval/benchmark_cases.json` (24 TH/EN synthetic cases), `eval/run_benchmark.py` (`62.78%` cost reduction, `0.00` PDPA leak rate, `1.00` HITL enforcement), `eval/thresholds.json`, `/api/v1/benchmark` scorecard endpoint, `tests/eval/test_benchmark_gates.py`, and `.github/workflows/ci.yml` (`38 passed` total [29 unit + 7 live PG16 integration + 2 eval gates], `ruff` 0 errors).
 - **Day 11–12 (Done):** `web/` Next.js No-Login Live Demo (trigger sample workflows, inspect live PII redaction diff & state timeline, approve/reject HITL queue, inspect/replay DLQ, view Cost Routing Benchmark scorecard, `/health` cold-start banner), container-safe `api/app/data/benchmark_snapshot.json`, `render.yaml`, `.github/workflows/ci.yml` (`frontend-ci`), live cloud deployment (**Supabase** + **Render** `https://production-ai-agent-ops-api.onrender.com` + **Vercel** `https://production-ai-agent-ops.vercel.app`), live 6-flow browser E2E verification, `docs/assets/demo-60s.gif` (`1280x720`), and full English `README.md` with live links & GIF (`pytest`: 40 passed [31 unit + 7 live PG16 integration + 2 eval gates], `ruff`: 0 errors, `npx tsc --noEmit && npm run build`: exit 0, `docker compose config -q`: exit 0).
-- **Day 13–14 (Pending — 2-Day Buffer):** Mobile UX polish, edge-case hardening, GitHub profile pinning, and anonymized learnings export.
+- **Day 13–14 (Done — 2-Day Buffer):** Same-origin `/backend` proxy + cold-start polling hardening (`8e662fb`, live-verified), Construction Animation Demo + `1280x720` GIF (`3967675`), and GitHub profile pinning completed.
 
 ---
 
